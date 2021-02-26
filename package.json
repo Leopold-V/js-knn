@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "prettier": "2.2.1"
   }
 }
