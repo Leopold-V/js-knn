@@ -1,57 +1,68 @@
-const getdata = async (jsonfilename) => {
+const getData = async (jsonfilename) => {
   const response = await fetch(jsonfilename);
-  const res = await response.json();
-  return res;
+  const result = await response.json();
+  const arrayFormat = result.map((ele) => {
+    return Object.values(ele);
+  });
+  return arrayFormat;
 };
 
-const DistanceFromTargetArray = async (target, jsonfilename) => {
-  const arr = await getdata(jsonfilename);
-  const copyBeforeModif = JSON.parse(JSON.stringify(arr));
+const DistanceFromTargetArray = async (target, dataset) => {
+  const copyBeforeModif = JSON.parse(JSON.stringify(dataset));
   const long = Math.sqrt(target.reduce((a, b) => a + b * b, 0));
 
-  const newArr = arr.map((ele, i) => {
-    delete arr[i][Object.keys(arr[i])[Object.keys(arr[i]).length - 1]];
-    return Math.sqrt(Object.values(ele).reduce((a, b) => a + b * b, 0));
+  const newArr = dataset.map((ele) => {
+    ele.pop();
+    return Math.sqrt(ele.reduce((a, b) => a + b * b, 0));
   });
   const tab = newArr.map((ele, i) => {
-    return {
-      value: ele,
-      species: Object.values(copyBeforeModif[i])[Object.values(copyBeforeModif[i]).length - 1],
-    };
+    return [ele, copyBeforeModif[i][copyBeforeModif[i].length - 1]];
   });
   const final = tab.map((ele) => {
-    return { position: Math.abs(ele.value - long), species: ele.species };
+    return [Math.abs(ele[0] - long), ele[ele.length - 1]];
   });
-  final.sort((a, b) => a.position - b.position);
+  final.sort((a, b) => a[0] - b[0]);
   return final;
 };
 
-const FindSpecies = async (target, jsonfilename) => {
-  const arr = await DistanceFromTargetArray(target, jsonfilename);
+const FindSpecies = async (arr) => {
   const count = {};
 
+  console.log(arr);
   for (let i = 0; i < 8; i++) {
-    if (
-      count[arr[i][Object.keys(arr[i])[Object.keys(arr[i]).length - 1]]] !== undefined
-    ) {
-      count[arr[i][Object.keys(arr[i])[Object.keys(arr[i]).length - 1]]]++;
+    if (count[arr[i][arr[i].length - 1]] !== undefined) {
+      count[arr[i][arr[i].length - 1]]++;
     } else {
-      count[arr[i][Object.keys(arr[i])[Object.keys(arr[i]).length - 1]]] = 1;
+      count[arr[i][arr[i].length - 1]] = 1;
     }
   }
-  console.log(count);
   return count;
+};
+
+const predict = async (target, jsonfile) => {
+  const arr = await getData(jsonfile);
+  const final = await DistanceFromTargetArray(target, arr);
+  const result = await FindSpecies(final);
+  console.log(result);
+  return result;
 };
 
 //Example with iris demo dataset
 
-const jsonfile = "iris.json";
-const target = [5.1, 3.5, 1.4, 0.2];
+const jsonfile1 = "iris.json";
+const target1 = [5.1, 3.5, 1.4, 0.2];
 const target2 = [7.7, 3, 6.1, 2.3];
 const target3 = [5, 2.3, 3.3, 1];
-FindSpecies(target, jsonfile);
-FindSpecies(target2, jsonfile);
-FindSpecies(target3, jsonfile);
+
+predict(target1, jsonfile1);
+predict(target2, jsonfile1);
+predict(target3, jsonfile1);
+
+const jsonfile2 = "newDiabetes.json";
+const target4 = [50, 0, 33.6, 0.627, 148, 6, 72, 35];
+const target5 = [31, 0, 26.6, 0.351, 85, 1, 66, 29];
+predict(target4, jsonfile2);
+predict(target5, jsonfile2);
 
 /*
 Result :
