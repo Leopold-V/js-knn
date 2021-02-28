@@ -1,5 +1,5 @@
 ### basic implementation of the KNN algorithm with vanilla JS.
-
+[Experimental]
 v0.1
 
 - support json iris dataset
